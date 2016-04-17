@@ -75,3 +75,33 @@ class Route(object):
                 application.add_handlers(_route['host'], [_route['spec']])
         else:
             return [_route['spec'] for _route in cls._routes]
+
+
+def cached(timeout=None):
+    """
+    给视图方法增加数据返回时的缓存装饰器
+    用法:
+        Class Handler(tornado.web.RequestHandler):
+            @cached(10)
+            def get(self):
+                return self.write('test')
+    :param timeout: 缓存超时秒
+    """
+    def decorator(f):
+        @functools.wraps(f)
+        def decorated_function(self, *args, **kwargs):
+            # TODO cache_key 应该考虑 GET POST 时传入的参数
+            # TODO 扩展化
+            cache_key = 'cache_view_' + self.request.path
+            cache = self.application.redis.get(cache_key)
+            if cache:
+                return self.write(self.application.redis.get(cache_key))
+            else:
+                def finish():
+                    _buffer = ''.join(self.cache_buffer)
+                    self.application.redis.set(cache_key, _buffer, ex=timeout)
+                self.on_finish = finish
+                self.cache_buffer = self._write_buffer
+                return f(self, *args, **kwargs)
+        return decorated_function
+    return decorator
