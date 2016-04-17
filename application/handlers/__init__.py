@@ -99,9 +99,17 @@ def cached(timeout=None):
             else:
                 def finish():
                     _buffer = ''.join(self.cache_buffer)
-                    self.application.redis.set(cache_key, _buffer, ex=timeout)
+                    if not callable(timeout):
+                        self.application.redis.set(cache_key, _buffer, ex=timeout)
+                    else:
+                        self.application.redis.set(cache_key, _buffer)
+                self.on_finish()  # 提前调用 on_finish
                 self.on_finish = finish
                 self.cache_buffer = self._write_buffer
                 return f(self, *args, **kwargs)
         return decorated_function
-    return decorator
+
+    if callable(timeout):
+        return decorator(timeout)
+    else:
+        return decorator
