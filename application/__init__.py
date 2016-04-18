@@ -35,10 +35,10 @@ class Application(tornado.web.Application):
         cache.init_app(self)
 
     def run(self):
+        self._print_starting_info()
         tornado.log.enable_pretty_logging()
         self.listen(self.settings.get('PORT', 8888))
         IOLoop.current().start()
-        self._print_starting_info()
 
     def _print_starting_info(self):
         print ' * Running on http://{HOST}:{PORT}/ (Press CTRL+C to quit)'.format(
