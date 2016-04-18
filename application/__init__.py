@@ -8,6 +8,7 @@ from tornado.ioloop import IOLoop
 from application.utils.libs import ConfigParser
 from application.extensions.tornado_redis import redis
 from application.extensions.tornado_sqlalchemy import db
+from application.extensions.tornado_cache import cache
 from application.handlers import Route
 from application.handlers.frontend import *
 
@@ -32,6 +33,7 @@ class Application(tornado.web.Application):
         """
         redis.init_app(self)
         db.init_app(self)
+        cache.init_app(self)
 
     def run(self):
         tornado.log.enable_pretty_logging()
