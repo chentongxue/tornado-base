@@ -25,7 +25,6 @@ class Application(tornado.web.Application):
         Route.register_routes(self)
 
         self._register_extensions()
-        self._print_starting_info()
 
     def _register_extensions(self):
         """
@@ -39,6 +38,7 @@ class Application(tornado.web.Application):
         tornado.log.enable_pretty_logging()
         self.listen(self.settings.get('PORT', 8888))
         IOLoop.current().start()
+        self._print_starting_info()
 
     def _print_starting_info(self):
         print ' * Running on http://{HOST}:{PORT}/ (Press CTRL+C to quit)'.format(

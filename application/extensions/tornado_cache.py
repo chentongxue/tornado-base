@@ -13,7 +13,7 @@ class TornadoRedisCache(object):
 
     def cached(self, timeout=None):
         """
-        给视图方法增加数据返回时的缓存装饰器
+        给视图方法增加数据返回时的缓存装饰器, 只允许缓存 GET 请求
         用法:
             Class Handler(tornado.web.RequestHandler):
                 @cache.cached(10)
@@ -24,6 +24,8 @@ class TornadoRedisCache(object):
         def decorator(f):
             @functools.wraps(f)
             def decorated_function(handler, *args, **kwargs):
+                if handler.request.method != 'GET':
+                    return f(handler, *args, **kwargs)
                 cache_key = self._generate_cache_key(handler.request)
                 cache_value = self.get(cache_key)
                 if cache_value:
