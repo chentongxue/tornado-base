@@ -2,6 +2,7 @@
 from wtforms import form
 
 from tornado import escape
+from tornado.web import HTTPError
 
 
 class TornadoInputWrapper(object):
@@ -33,17 +34,22 @@ class TornadoInputWrapper(object):
 
 class Form(form.Form):
     """
-    A Form derivative which uses the locale module from Tornado.
+    为 RESTful 接口提供表单验证
     """
 
-    def __init__(self, formdata=None, obj=None, prefix='', locale_code='en_US', **kwargs):
+    def __init__(self, handler=None, obj=None, prefix='', locale_code='en_US', **kwargs):
         self._locale_code = locale_code
-        super(Form, self).__init__(formdata, obj, prefix, **kwargs)
+        self._handler = handler
+        super(Form, self).__init__(handler.request.arguments, obj, prefix, **kwargs)
 
     def process(self, formdata=None, obj=None, **kwargs):
         if formdata is not None and not hasattr(formdata, 'getlist'):
             formdata = TornadoInputWrapper(formdata)
         super(Form, self).process(formdata, obj, **kwargs)
+        if not self.validate():
+            self._handler.set_status(400)
+            self._handler.finish(self.errors)
+            raise HTTPError(400)
 
 
 __all__ = ['Form']

@@ -9,8 +9,6 @@ class FrontendHandler(BaseHandler):
         return self.render('index.html')
 
     def post(self):
-        form = TestForm(self.request.arguments)
-        if form.validate():
-            return self.write('success')
-        else:
-            return self.write(form.errors)
+        form = TestForm(self)
+        print form.test.data
+        return self.write('success')
