@@ -19,6 +19,7 @@ class Application(tornado.web.Application):
         super(Application, self).__init__(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),
             autoreload=settings.get('DEBUG'),
+            secret_key=settings.get('SECRET_KEY'),
             **settings
         )
 
