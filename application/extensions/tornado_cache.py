@@ -16,7 +16,7 @@ class TornadoRedisCache(object):
         给视图方法增加数据返回时的缓存装饰器, 只允许缓存 GET 请求
         用法:
             Class Handler(tornado.web.RequestHandler):
-                @cache.cached(10)
+                @cache.cached()
                 def get(self):
                     return self.write('test')
         :param timeout: 缓存超时秒数, 不填则永不过期
@@ -43,14 +43,19 @@ class TornadoRedisCache(object):
                     handler.cache_buffer = handler._write_buffer
                     return f(handler, *args, **kwargs)
             return decorated_function
+        return decorator
 
-        if callable(timeout):
-            return decorator(timeout)
+    def clear_cache(self, key=None):
+        """
+        清除缓存
+        :param key: 相应的缓存key, 不填则清除所有
+        :return:
+        """
+        if not key:
+            keys = self.app.redis.keys(self.cache_key_prefix + '*')
         else:
-            return decorator
+            keys = [self.cache_key_prefix + key]
 
-    def clear(self):
-        keys = self.app.redis.keys(self.cache_key_prefix + '*')
         if not keys:
             return
         self.app.redis.delete(*keys)
